@@ -1,8 +1,8 @@
 package pl.potera.stringcalc;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class StringCalculator implements Calculator {
@@ -20,12 +20,19 @@ public class StringCalculator implements Calculator {
         if (!delimiter.equals(DEFAULT_DELIMITER)) {
             lines = lines.subList(1, lines.size());
         }
-        return splitValues(lines.stream(), delimiter)
-                .map(this::validateEmptyValues)
-                .map(Integer::parseInt)
+        List<Integer> intList = parseValues(lines, delimiter);
+        validateNegativeValues(intList);
+        return intList.stream()
                 .filter(value -> value <= 1000)
                 .reduce(Integer::sum)
                 .orElse(0);
+    }
+
+    private List<Integer> parseValues(List<String> lines, String delimiter) {
+        return splitValues(lines.stream(), delimiter)
+                .map(this::validateEmptyValues)
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
     }
 
     private String findDelimiter(String line) {
@@ -47,6 +54,13 @@ public class StringCalculator implements Calculator {
             throw new IllegalArgumentException();
         } else {
             return line;
+        }
+    }
+
+    private void validateNegativeValues(List<Integer> values) {
+        List<Integer> negativeValues = values.stream().filter(value -> value < 0).collect(Collectors.toList());
+        if (!negativeValues.isEmpty()) {
+            throw new NegativesNotAllowedException(negativeValues.toString());
         }
     }
 }

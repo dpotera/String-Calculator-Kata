@@ -40,6 +40,24 @@ class StringCalculatorSpec extends Specification {
         "//;\n1;2"      | 3
     }
 
+    @Unroll
+    def "should throw #exception for invalid input"() {
+        when:
+        calculator.add(input)
+
+        then:
+        def e = thrown(exception)
+        e.message == message
+
+        where:
+        input       | exception                     | message
+        "1,\n"      | IllegalArgumentException      | null
+        "\n"        | IllegalArgumentException      | null
+        "//;\n1;"   | IllegalArgumentException      | null
+        "-10"       | NegativesNotAllowedException  | [-10].toString()
+        "-10,3,-2"  | NegativesNotAllowedException  | [-10, -2].toString()
+    }
+
     def "should throw IllegalArgumentException for invalid input"() {
         when:
         calculator.add(input)
