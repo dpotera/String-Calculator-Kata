@@ -23,6 +23,7 @@ public class StringCalculator implements Calculator {
         return splitValues(lines.stream(), delimiter)
                 .map(this::validateEmptyValues)
                 .map(Integer::parseInt)
+                .filter(value -> value <= 1000)
                 .reduce(Integer::sum)
                 .orElse(0);
     }

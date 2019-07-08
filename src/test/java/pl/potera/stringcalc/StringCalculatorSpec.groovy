@@ -25,6 +25,8 @@ class StringCalculatorSpec extends Specification {
         "1,2,4,5,2"     | 14
         "1,2\n4\n5,2"   | 14
         "1\n4\n5"       | 10
+        "1\n4\n5,1000"  | 1010
+        "1\n4\n5,1050"  | 10
     }
 
     @Unroll
