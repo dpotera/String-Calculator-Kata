@@ -17,10 +17,12 @@ class StringCalculatorSpec extends Specification {
         calculator.add(input) == result
 
         where:
-        input   | result
-        ""      | 0
-        "1"     | 1
-        "1,2"   | 3
+        input       | result
+        ""          | 0
+        "1"         | 1
+        "1,2"       | 3
+        "1,2,10"    | 13
+        "1,2,4,5,2" | 14
     }
 
     def "should handle null input"() {
