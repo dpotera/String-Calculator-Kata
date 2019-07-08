@@ -1,7 +1,10 @@
 package pl.potera.stringcalc;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.regex.MatchResult;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,11 +19,9 @@ public class StringCalculator implements Calculator {
             return 0;
         }
         List<String> lines = Arrays.asList(numbers.split(NEW_LINE, -1));
-        String delimiter = findDelimiter(lines.get(0));
-        if (!delimiter.equals(DEFAULT_DELIMITER)) {
-            lines = lines.subList(1, lines.size());
-        }
-        List<Integer> intList = parseValues(lines, delimiter);
+        List<String> delimiters = findDelimiters(lines.get(0));
+        lines = skipDelimitersLine(lines, delimiters);
+        List<Integer> intList = parseValues(lines, delimiters);
         validateNegativeValues(intList);
         return intList.stream()
                 .filter(value -> value <= 1000)
@@ -28,25 +29,45 @@ public class StringCalculator implements Calculator {
                 .orElse(0);
     }
 
-    private List<Integer> parseValues(List<String> lines, String delimiter) {
-        return splitValues(lines.stream(), delimiter)
+    private List<String> skipDelimitersLine(List<String> lines, List<String> delimiters) {
+        if (!delimiters.equals(Collections.singletonList(DEFAULT_DELIMITER))) {
+            lines = lines.subList(1, lines.size());
+        }
+        return lines;
+    }
+
+    private List<Integer> parseValues(List<String> lines, List<String> delimiters) {
+        return splitValues(lines.stream(), delimiters)
                 .map(this::validateEmptyValues)
                 .map(Integer::parseInt)
                 .collect(Collectors.toList());
     }
 
-    private String findDelimiter(String line) {
+    private List<String> findDelimiters(String line) {
         if (line.startsWith(DELIMITER_PREFIX)) {
-            return line.replace(DELIMITER_PREFIX, "");
-        } else return DEFAULT_DELIMITER;
+            String delimiters = line.replace(DELIMITER_PREFIX, "");
+            if (line.contains("[")) {
+                return Pattern.compile("(?<=\\[)([^\\]]+)(?=\\])")
+                        .matcher(delimiters)
+                        .results()
+                        .map(MatchResult::group)
+                        .collect(Collectors.toList());
+            } else {
+                return Collections.singletonList(delimiters);
+            }
+        } else return Collections.singletonList(DEFAULT_DELIMITER);
     }
 
-    private Stream<String> splitValues(Stream<String> lines, String delimiter) {
-        return lines.flatMap(line -> splitStringToStream(line, delimiter));
+    private Stream<String> splitValues(Stream<String> lines, List<String> delimiters) {
+        return lines.flatMap(line -> splitStringToStream(line, delimiters));
     }
 
-    private Stream<String> splitStringToStream(String input, String delimiter) {
-        return Arrays.stream(input.split(delimiter, -1));
+    private Stream<String> splitStringToStream(String input, List<String> delimiters) {
+        return Arrays.stream(input.split(createDelimitersRegex(delimiters), -1));
+    }
+
+    private String createDelimitersRegex(List<String> delimiters) {
+        return "[" + String.join("|", delimiters) + "]+";
     }
 
     private String validateEmptyValues(String line) {
