@@ -25,7 +25,17 @@ class StringCalculatorSpec extends Specification {
         "1,2,4,5,2"     | 14
         "1,2\n4\n5,2"   | 14
         "1\n4\n5"       | 10
-        "1,\n"       | 10
+    }
+
+    @Unroll
+    def "should parse delimiter and sum expression \"#input\" = #result"() {
+        expect:
+        calculator.add(input) == result
+
+        where:
+        input           | result
+        "//'\n1'2'3"    | 6
+        "//;\n1;2"      | 3
     }
 
     def "should throw IllegalArgumentException for invalid input"() {
@@ -36,7 +46,7 @@ class StringCalculatorSpec extends Specification {
         thrown(IllegalArgumentException)
 
         where:
-        input  << ["1,\n", "\n"]
+        input  << ["1,\n", "\n", "//;\n1;"]
     }
 
     def "should handle null input"() {
