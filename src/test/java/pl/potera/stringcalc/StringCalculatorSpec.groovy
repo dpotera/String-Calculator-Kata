@@ -5,11 +5,14 @@ import spock.lang.Unroll
 
 class StringCalculatorSpec extends Specification {
 
+    def calculator
+
+    def setup() {
+        calculator = new StringCalculator()
+    }
+
     @Unroll
     def "sum of expression \"#input\" should be #result"() {
-        given:
-        def calculator = new StringCalculator()
-
         expect:
         calculator.add(input) == result
 
@@ -18,5 +21,13 @@ class StringCalculatorSpec extends Specification {
         ""      | 0
         "1"     | 1
         "1,2"   | 3
+    }
+
+    def "should handle null input"() {
+        when:
+        def result = calculator.add(null)
+
+        then:
+        result == 0
     }
 }
